@@ -19,9 +19,22 @@ const api = (function () {
     });
   };
 
+  const updateItem = function(id, updateData) {
+    const newData = JSON.stringify(updateData);
+    console.log(newData);
+    return fetch(`${BASE_URL}/items/${id}`,{
+      method: 'PATCH',
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      }),
+      body: newData
+    });
+  };
+
   const BASE_URL = 'https://thinkful-list-api.herokuapp.com/hubert';
   return {
     getItems,
-    createItem
+    createItem,
+    updateItem
   };
 } ()); 
