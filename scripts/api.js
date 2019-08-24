@@ -31,10 +31,17 @@ const api = (function () {
     });
   };
 
+  const deleteItem = function(id) {
+    return fetch(`${BASE_URL}/items/${id}`,{
+      method: 'DELETE'
+    });
+  }
+
   const BASE_URL = 'https://thinkful-list-api.herokuapp.com/hubert';
   return {
     getItems,
     createItem,
-    updateItem
+    updateItem,
+    deleteItem
   };
 } ()); 

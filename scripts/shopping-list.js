@@ -39,7 +39,15 @@ const shoppingList = (function(){
     const items = shoppingList.map((item) => generateItemElement(item));
     return items.join('');
   }
-  
+
+  function generateError(message) {
+    return `
+      <section class="error-content">
+        <button id="cancel-error">X</button>
+        <p>${message}</p>
+      </section>
+    `;
+  }
   
   function render() {
     // Filter item list if store prop is true by item.checked === false
@@ -61,7 +69,15 @@ const shoppingList = (function(){
     $('.js-shopping-list').html(shoppingListItemsString);
   }
   
-  
+  function renderError() {
+    if (store.error) {
+      const el = generateError(store.error);
+      $('.error-container').html(el);
+    } else {
+      $('.error-container').empty();
+    }
+  }
+
   function handleNewItemSubmit() {
     $('#js-shopping-list-form').submit(function (event) {
       event.preventDefault();
@@ -77,9 +93,11 @@ const shoppingList = (function(){
         .then((newItem) => {
           store.addItem(newItem);
           render();
-        });
-      //store.addItem(newItemName);
-      render();
+        })
+        .catch(err => {
+          store.setError(err.message);
+          renderError();
+        })
     });
   }
   
@@ -97,7 +115,11 @@ const shoppingList = (function(){
         .then(() => {
           store.findAndUpdate(id, newData)
           render();
-        });
+        })
+        .catch(err => {
+          store.setError(err.message);
+          renderError();
+        })
     });
   }
   
@@ -107,9 +129,17 @@ const shoppingList = (function(){
       // get the index of the item in store.items
       const id = getItemIdFromElement(event.currentTarget);
       // delete the item
-      store.findAndDelete(id);
+      api.deleteItem(id)
+        .then(() => {
+          store.findAndDelete(id);
+          render();
+        })
+        .catch((err) => {
+          console.log(err);
+          store.setError(err.message);
+          renderError();
+        })
       // render the updated shopping list
-      render();
     });
   }
   
@@ -151,6 +181,13 @@ const shoppingList = (function(){
       render();
     });
   }
+
+  function handleCloseError() {
+    $('.error-container').on('click', '#cancel-error', () => {
+      store.setError(null);
+      renderError();
+    });
+  }
   
   function bindEventListeners() {
     handleNewItemSubmit();
@@ -160,6 +197,7 @@ const shoppingList = (function(){
     handleToggleFilterClick();
     handleShoppingListSearch();
     handleItemStartEditing();
+    handleCloseError();
   }
 
   // This object contains the only exposed methods from this module:
